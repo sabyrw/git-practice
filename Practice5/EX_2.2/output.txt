@@ -1,0 +1,16 @@
+{
+    "shop": "EUROPHARMA",
+    "metadata": {
+        "date": "18.04.2019",
+        "time": "11:13:58",
+        "payment_method": "Card"
+    },
+    "items": [
+        { "name": "Натрия хлорид 0,9%, 200 мл, фл", "price": 308.0 },
+        { "name": "Борный спирт 3%, 20 мл, фл.", "price": 51.0 },
+        { "name": "Шприц 2 мл, 3-х комп. (Bioject)", "price": 32.0 },
+        { "name": "Система для инфузии Vogt Medical", "price": 120.0 },
+        { "name": "Clear шампунь Актив спорт 2в1мужской  400 мл", "price": 1200.0 }
+    ],
+    "total_amount": 18009.0
+}
