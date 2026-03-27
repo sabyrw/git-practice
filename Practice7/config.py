@@ -1,0 +1,7 @@
+params = {
+    "host": "localhost",
+    "database": "postgres",
+    "user": "postgres",
+    "password": "070708",
+    "port": "5432"
+}
