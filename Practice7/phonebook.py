@@ -75,19 +75,5 @@ def delete_contact(identifier):
 
 # --- Testing the implementation ---
 if __name__ == "__main__":
-    # Uncomment lines to test specific features:
-    
-    # 1. Add from console
-    # insert_contact("John Doe", "87071234567")
-    
-    # 2. Upload from CSV
-    # insert_from_csv("contacts.csv")
-    
-    # 3. Search (by name or phone prefix)
-    query_contacts("John")
-    
-    # 4. Update
-    # update_contact(1, new_phone="87770001122")
-    
-    # 5. Delete
-    # delete_contact("John Doe")
+    insert_from_csv("contacts.csv")
+    query_contacts("")

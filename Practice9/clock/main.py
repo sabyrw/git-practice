@@ -1,21 +1,18 @@
 import pygame
 import datetime
 
-# Инициализация
 pygame.init()
 WIDTH, HEIGHT = 800, 800
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Mickey Mouse Clock")
 clock = pygame.time.Clock()
 
-# Суреттерді жүктеу
 body_img = pygame.image.load('body.jpeg').convert_alpha()
 hand_min_raw = pygame.image.load('second_hand.png').convert_alpha()
 hand_sec_raw = pygame.image.load('minut_hand.png').convert_alpha()
 
-# --- ӨЗГЕРТІЛГЕН БӨЛІМ (Жуандығы реттелген) ---
-hand_min_img = pygame.transform.scale(hand_min_raw, (140, 320)) # Ені 40-тан 100-ге өзгерді
-hand_sec_img = pygame.transform.scale(hand_sec_raw, (120, 320))  # Ені 25-тен 80-ге өзгерді
+hand_min_img = pygame.transform.scale(hand_min_raw, (140, 320)) 
+hand_sec_img = pygame.transform.scale(hand_sec_raw, (120, 320))
 
 def blit_rotate_pivot(surf, image, pos, originPos, angle):
     image_rect = image.get_rect(topleft=(pos[0] - originPos[0], pos[1] - originPos[1]))
@@ -26,7 +23,6 @@ def blit_rotate_pivot(surf, image, pos, originPos, angle):
     rotated_image_rect = rotated_image.get_rect(center=rotated_image_center)
     surf.blit(rotated_image, rotated_image_rect)
 
-# Сағаттың ортасы
 center = (WIDTH // 2, HEIGHT // 2)
 
 running = True
@@ -46,14 +42,13 @@ while running:
     
     screen.blit(body_img, body_img.get_rect(center=center))
 
-    # Тілдердің орталық нүктесі (pivot)
-    min_pivot = (hand_min_img.get_width() // 2, hand_min_img.get_height() - 120)
+    min_pivot = (hand_min_img.get_width() // 2, hand_min_img.get_height() - 100)
     blit_rotate_pivot(screen, hand_min_img, center, min_pivot, smooth_minute)
 
-    sec_pivot = (hand_sec_img.get_width() // 2, hand_sec_img.get_height() - 110)
+    sec_pivot = (hand_sec_img.get_width() // 2, hand_sec_img.get_height() - 100)
     blit_rotate_pivot(screen, hand_sec_img, center, sec_pivot, smooth_second)
 
-    pygame.draw.circle(screen, (0, 0, 0), center, 5)
+    pygame.draw.circle(screen, (0, 0, 0), center, 0)
 
     pygame.display.flip()
     clock.tick(60)
