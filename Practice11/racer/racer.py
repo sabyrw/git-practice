@@ -26,26 +26,31 @@ pygame.display.set_caption("Racer")
 # ---------------- ENEMY ----------------
 class Enemy(pygame.sprite.Sprite):
     def __init__(self):
-        super().__init__() 
+        super().__init__()
         self.image = pygame.image.load("enemy.png")
         self.rect = self.image.get_rect()
-        self.rect.center = (random.randint(40,SCREEN_WIDTH-40), 0) 
+        self.rect.center = (random.randint(40,SCREEN_WIDTH-40), 0)
+
+        self.speed = 7  # 🚗 бастапқы speed
 
     def move(self):
-        self.rect.move_ip(0,7)
+        self.rect.move_ip(0, self.speed)
 
         if self.rect.bottom > SCREEN_HEIGHT:
             self.rect.top = 0
             self.rect.center = (random.randint(30, 370), 0)
 
+    def increase_speed(self):
+        self.speed += 1  # 🚀 speed өсіру
+
     def draw(self, surface):
-        surface.blit(self.image, self.rect) 
+        surface.blit(self.image, self.rect)
 
 
 # ---------------- PLAYER ----------------
 class Player(pygame.sprite.Sprite):
     def __init__(self):
-        super().__init__() 
+        super().__init__()
         self.image = pygame.image.load("player.png")
         self.rect = self.image.get_rect()
         self.rect.center = (160, 520)
@@ -57,48 +62,63 @@ class Player(pygame.sprite.Sprite):
             if pressed_keys[K_LEFT]:
                 self.rect.move_ip(-5, 0)
 
-        if self.rect.right < SCREEN_WIDTH:        
+        if self.rect.right < SCREEN_WIDTH:
             if pressed_keys[K_RIGHT]:
                 self.rect.move_ip(5, 0)
 
     def draw(self, surface):
-        surface.blit(self.image, self.rect)     
+        surface.blit(self.image, self.rect)
 
 
 # ---------------- COIN ----------------
 class Coin(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.image.load("coin.png")
-        self.image = pygame.transform.scale(self.image, (30, 30))
-        self.rect = self.image.get_rect()
+
+        self.rect = pygame.Rect(0, 0, 30, 30)
 
         self.rect.x = random.randint(20, SCREEN_WIDTH-40)
         self.rect.y = -50
         self.speed = 5
 
+        # 🪙 weight (ұпай)
+        self.weight = random.choice([1, 2, 3])
+
+        # 🎨 түсі weight-ке байланысты
+        if self.weight == 1:
+            self.color = YELLOW
+        elif self.weight == 2:
+            self.color = GREEN
+        else:
+            self.color = RED
+
     def move(self):
-        self.rect.y += self.speed   
+        self.rect.y += self.speed
 
     def draw(self, surface):
-        surface.blit(self.image, self.rect)
+        pygame.draw.circle(surface, self.color, self.rect.center, 15)
 
 
 # ---------------- OBJECTS ----------------
 P1 = Player()
 E1 = Enemy()
 coins = []
+
 score = 0
+coins_collected = 0  # қанша coin жиналды
 
 font = pygame.font.SysFont("Arial", 25)
 
 # -------- ROAD ANIMATION --------
 road_y = 0
 
+# ⚡ LEVEL UP эффект таймері
+speed_message_timer = 0
+
 # ---------------- GAME LOOP ----------------
 while True:
 
-    for event in pygame.event.get():              
+    for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
@@ -131,11 +151,9 @@ while True:
     # -------- ROAD DRAW --------
     DISPLAYSURF.fill(GRAY)
 
-    # side lines
     pygame.draw.rect(DISPLAYSURF, YELLOW, (0, 0, 10, SCREEN_HEIGHT))
     pygame.draw.rect(DISPLAYSURF, YELLOW, (390, 0, 10, SCREEN_HEIGHT))
 
-    # moving center line
     road_y += 5
     if road_y >= 40:
         road_y = 0
@@ -157,11 +175,28 @@ while True:
 
         if P1.rect.colliderect(coin.rect):
             coins.remove(coin)
-            score += 1
 
-    # -------- SCORE --------
-    text = font.render(f"Coins: {score}", True, BLACK)
-    DISPLAYSURF.blit(text, (SCREEN_WIDTH - 130, 10))
+            score += coin.weight
+            coins_collected += 1
+
+            # 🚗 әр 5 coin сайын speed өседі
+            if coins_collected % 5 == 0:
+                E1.increase_speed()
+                speed_message_timer = 60  # ⚡ эффект
+
+    # -------- TEXT --------
+    score_text = font.render(f"Score: {score}", True, BLACK)
+    speed_text = font.render(f"Speed: {E1.speed}", True, BLACK)
+
+    DISPLAYSURF.blit(score_text, (SCREEN_WIDTH - 150, 10))
+    DISPLAYSURF.blit(speed_text, (10, 10))
+
+    # ⚡ LEVEL UP эффект
+    if speed_message_timer > 0:
+        font_big = pygame.font.SysFont("Arial", 40)
+        msg = font_big.render("LEVEL UP!", True, RED)
+        DISPLAYSURF.blit(msg, (100, 250))
+        speed_message_timer -= 1
 
     pygame.display.update()
     FramePerSec.tick(FPS)

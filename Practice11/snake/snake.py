@@ -6,7 +6,7 @@ pygame.init()
 
 # ---------------- SETTINGS ----------------
 WIDTH, HEIGHT = 600, 600
-CELL = 20   # grid өлшемі
+CELL = 20
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Snake")
@@ -18,15 +18,15 @@ WHITE = (255,255,255)
 GREEN = (0,200,0)
 RED = (200,0,0)
 BLACK = (0,0,0)
+YELLOW = (255,255,0)
 
 # ---------------- SNAKE ----------------
-snake = [(100,100), (80,100), (60,100)]  # бастапқы дене
-direction = (20,0)  # оңға қозғалады
+snake = [(100,100), (80,100), (60,100)]
+direction = (20,0)
 
-# -------------- Game Over ----------------
-
+# ---------------- GAME OVER ----------------
 def game_over():
-    screen.fill((200,0,0))  # қызыл фон
+    screen.fill((200,0,0))
 
     font_big = pygame.font.SysFont("Arial", 50)
     font_small = pygame.font.SysFont("Arial", 30)
@@ -40,22 +40,40 @@ def game_over():
     screen.blit(text3, (220, 320))
 
     pygame.display.update()
-    pygame.time.delay(3000)  # 3 секунд көрсетеді
+    pygame.time.delay(3000)
 
     pygame.quit()
     sys.exit()
 
-# ---------------- FOOD ----------------
+# ---------------- NORMAL FOOD ----------------
 def generate_food():
     while True:
         x = random.randrange(0, WIDTH, CELL)
         y = random.randrange(0, HEIGHT, CELL)
-
-        # snake 
         if (x,y) not in snake:
             return (x,y)
 
 food = generate_food()
+
+# ---------------- BONUS FOOD ----------------
+class BonusFood:
+    def __init__(self):
+        self.position = generate_food()
+        self.size = CELL * 2  # ⭐ үлкен
+        self.timer = random.randint(120, 180)  # 2–3 сек (60 FPS)
+        self.active = True
+
+    def update(self):
+        self.timer -= 1
+        if self.timer <= 0:
+            self.active = False  # ⏱ жоғалады
+
+    def draw(self):
+        pygame.draw.rect(screen, YELLOW,
+                         (self.position[0], self.position[1],
+                          self.size, self.size))
+
+bonus_food = None  # басында жоқ
 
 # ---------------- SCORE & LEVEL ----------------
 score = 0
@@ -73,7 +91,6 @@ while True:
             pygame.quit()
             sys.exit()
 
-        # басқару
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP and direction != (0,20):
                 direction = (0,-20)
@@ -88,39 +105,65 @@ while True:
     head = (snake[0][0] + direction[0], snake[0][1] + direction[1])
     snake.insert(0, head)
 
-    # -------- WALL COLLISION --------
+    # -------- COLLISIONS --------
     if (head[0] < 0 or head[0] >= WIDTH or 
         head[1] < 0 or head[1] >= HEIGHT):
-            game_over()
-        
+        game_over()
 
-    # -------- SELF COLLISION --------
     if head in snake[1:]:
         game_over()
 
-    # -------- EAT FOOD --------
+    # -------- NORMAL FOOD --------
     if head == food:
         score += 1
         food = generate_food()
     else:
-        snake.pop()  # құйрықты қысқарту
+        snake.pop()
 
-    # -------- LEVEL SYSTEM --------
-    if score >= level * 4:   # әр 4 food сайын level ↑
+    # -------- BONUS FOOD SPAWN --------
+    if bonus_food is None and random.randint(1, 200) == 1:
+        bonus_food = BonusFood()
+
+    # -------- BONUS FOOD UPDATE --------
+    if bonus_food:
+        bonus_food.update()
+
+        # Егер snake жесе
+        bx, by = bonus_food.position
+        if (bx <= head[0] < bx + bonus_food.size and
+            by <= head[1] < by + bonus_food.size):
+            score += 3  # ⭐ көп ұпай
+            bonus_food = None
+
+        # Егер уақыты бітсе
+        elif not bonus_food.active:
+            bonus_food = None
+
+    # -------- LEVEL --------
+    if score >= level * 4:
         level += 1
         speed += 2
 
     # -------- DRAW --------
     screen.fill(WHITE)
 
-    # snake салу
+    # snake
     for segment in snake:
         pygame.draw.rect(screen, GREEN, (*segment, CELL, CELL))
 
-    # food салу
+    # normal food
     pygame.draw.rect(screen, RED, (*food, CELL, CELL))
 
-    # score + level
+    # bonus food
+    if bonus_food:
+        bonus_food.draw()
+
+        # ⏱ секундпен таймер
+        seconds = bonus_food.timer // 60
+        timer_text = font.render(f"Bonus: {seconds}s", True, BLACK)
+        screen.blit(timer_text, (400, 10))
+
+    # UI
     text = font.render(f"Score: {score}  Level: {level}", True, BLACK)
     screen.blit(text, (10, 10))
 
